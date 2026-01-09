@@ -14,3 +14,7 @@ StudyBites/
 └── requirements.txt
 ```
 I have never done an actual package before... I hope this isn't too hard...
+
+---
+
+I HATE THIS! I'll abandon everything and start making it ignoring the inteerface. probably will make it a command line interface later... unless someone can encapsulate it for me... I HATE GUIs.
