@@ -43,7 +43,7 @@ def showitem(file_path: str):
 def showanswer(file_path: str):
 	# display the answer file of an item
 	if not os.path.exists(file_path):
-		print("Error:\n\Item file does not exist.")
+		print("Error:\n\tItem file does not exist.")
 		return
 	if os.path.isfile(file_path):
 		os.startfile(file_path)
@@ -58,10 +58,10 @@ def showanswer(file_path: str):
 
 def review(item: list[str]) -> bool:
 	# review an item and update its cooldown and proficiency
-	file_path = f"data{os.path.sep}{item['subject']}{os.path.sep}{item['chapter']}{os.path.sep}{item['name']}"
 	item = {"id": item[0], "cooldown": int(item[1]), "proficiency": int(item[2]), "subject": item[3], "chapter": item[4], "name": item[5]}
+	file_path = f"data{os.path.sep}{item['subject']}{os.path.sep}{item['chapter']}{os.path.sep}{item['name']}"
 	print(f"Reviewing item: {item['name']} (Subject: {item['subject']}, Chapter: {item['chapter']})")
-	print(f"Current proficiency: {item['proficiency']}, last seen: {newcooldown(item['proficiency'])} sessions ago")
+	print(f"Current proficiency: {item['proficiency']}")
 	print(f"\nfile path: .{os.path.sep}{file_path}\n")
 	while True:
 		choice = input("[o] open item | [a] show answer | [s] success | [f] fail | [q] skip\n> ").lower()
