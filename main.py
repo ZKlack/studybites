@@ -1,6 +1,7 @@
 import os
 import csv
 import random
+import bisect
 
 CD_MULTIPLIER = 1.5
 CD_MAX = 30
@@ -63,7 +64,7 @@ def review(item: list[str]) -> bool:
 	print(f"Current proficiency: {item['proficiency']}, last seen: {newcooldown(item['proficiency'])} sessions ago")
 	print(f"\nfile path: .{os.path.sep}{file_path}\n")
 	while True:
-		choice = input("[o] open item | [a] show answer | [s] success | [f] fail | [q] quit\n> ").lower()
+		choice = input("[o] open item | [a] show answer | [s] success | [f] fail | [q] skip\n> ").lower()
 		if choice not in ["o", "a", "s", "f", "q"]:
 			print("Invalid choice, please try again.")
 			continue
@@ -97,3 +98,67 @@ def review(item: list[str]) -> bool:
 		file = csv.writer(f)
 		file.writerows(rows)
 	return True
+
+def tickdown():
+	# decrease cooldowns of all items by 1
+	rows = []
+	with open("data"+os.path.sep+"memory.csv", "r") as f:
+		file = csv.reader(f)
+		rows.append(next(file))
+		for row in file:
+			cooldown = int(row[1])
+			cooldown -= 1
+			rows.append([row[0], str(cooldown), row[2], row[3], row[4], row[5]])
+	with open("data"+os.path.sep+"memory.csv", "w") as f:
+		file = csv.writer(f)
+		file.writerows(rows)
+
+def getdueitems() -> list[list[str]]:
+	# get all items that are due for review
+	dueitems = []
+	with open("data"+os.path.sep+"memory.csv", "r") as f:
+		file = csv.reader(f)
+		next(file)
+		for row in file:
+			cooldown = int(row[1])
+			if cooldown <= 0: # include past due items
+				bisect.insort(dueitems, row, key=lambda x: int(x[1])) # sort by cooldown (most overdue first)
+	return dueitems
+
+def mainloop():
+	# main menu loop
+	while True:
+		print("\n--- StudyBites ---")
+		print("[n] New session")
+		print("[c] Continue session")
+		print("[q] Quit")
+		choice = input("> ").lower()
+		if choice not in ["n", "c", "q"]:
+			print("Invalid choice, please try again.")
+			continue
+		if choice == "n":
+			tickdown()
+			choice = "c"  # start a continue session after ticking down
+		if choice == "c":
+			dueitems = getdueitems()
+			if not dueitems:
+				print("No items are due for review.")
+				continue
+			past_due_count = sum(1 for item in dueitems if int(item[1]) < 0)
+			if past_due_count > 0:
+				print(f"Note: You have {past_due_count} past due items.")
+			print(f"{len(dueitems)} total items are due for review.")
+			completed = True
+			for item in dueitems:
+				completed = review(item) and completed
+			if completed:
+				print("Session complete! All due items reviewed.")
+			else:
+				print("some items were skipped :(")
+		if choice == "q":
+			print("Exiting StudyBites. Goodbye!")
+			break
+
+if __name__ == "__main__":
+	structurize()
+	mainloop()
