@@ -5,12 +5,45 @@ import bisect
 
 CD_MULTIPLIER = 1.5
 CD_MAX = 30
+IDS = set()
+
+def itemexists(item_id: str) -> bool:
+	# check if an item exists in memory.csv
+	if item_id in IDS:
+		return True
+	with open("data"+os.path.sep+"memory.csv", "r", newline='') as f:
+		file = csv.reader(f)
+		next(file)
+		for row in file:
+			IDS.add(row[0])
+			if row[0] == item_id:
+				return True
+	return False
+
+def scanfiles():
+	# scan the data directory for new items
+	for subject in os.listdir("data"):
+		subject_path = "data"+os.path.sep+subject
+		if not os.path.isdir(subject_path):
+			continue
+		for chapter in os.listdir(subject_path):
+			chapter_path = subject_path+os.path.sep+chapter
+			if not os.path.isdir(chapter_path):
+				continue
+			for item in os.listdir(chapter_path):
+				item_path = chapter_path+os.path.sep+item
+				if itemexists(item_path):
+					continue
+				new_row = [item_path, "1", "0", subject, chapter, item]
+				with open("data"+os.path.sep+"memory.csv", "a", newline='') as f:
+					file = csv.writer(f)
+					file.writerow(new_row)
 
 def structurize():
 	# initialize the file structure in case it doesn't exist
 	os.makedirs("data", exist_ok=True)
 	if not os.path.exists("data"+os.path.sep+"memory.csv"):
-		with open("data"+os.path.sep+"memory.csv", "w") as f:
+		with open("data"+os.path.sep+"memory.csv", "w", newline='') as f:
 			file = csv.writer(f)
 			file.writerow(["id", "cooldown", "proficiency", "subject", "chapter", "name"])
 	os.makedirs("data"+os.path.sep+"etc", exist_ok=True) # uncatagorized subject
@@ -86,7 +119,7 @@ def review(item: list[str]) -> bool:
 			print("Exiting review.")
 			return False
 	rows = []
-	with open("data"+os.path.sep+"memory.csv", "r") as f:
+	with open("data"+os.path.sep+"memory.csv", "r", newline='') as f:
 		file = csv.reader(f)
 		rows.append(next(file))
 		for row in file:
@@ -94,7 +127,7 @@ def review(item: list[str]) -> bool:
 				rows.append([item['id'], str(item['cooldown']), str(item['proficiency']), item['subject'], item['chapter'], item['name']])
 			else:
 				rows.append(row)
-	with open("data"+os.path.sep+"memory.csv", "w") as f:
+	with open("data"+os.path.sep+"memory.csv", "w", newline='') as f:
 		file = csv.writer(f)
 		file.writerows(rows)
 	return True
@@ -102,21 +135,21 @@ def review(item: list[str]) -> bool:
 def tickdown():
 	# decrease cooldowns of all items by 1
 	rows = []
-	with open("data"+os.path.sep+"memory.csv", "r") as f:
+	with open("data"+os.path.sep+"memory.csv", "r", newline='') as f:
 		file = csv.reader(f)
 		rows.append(next(file))
 		for row in file:
 			cooldown = int(row[1])
 			cooldown -= 1
 			rows.append([row[0], str(cooldown), row[2], row[3], row[4], row[5]])
-	with open("data"+os.path.sep+"memory.csv", "w") as f:
+	with open("data"+os.path.sep+"memory.csv", "w", newline='') as f:
 		file = csv.writer(f)
 		file.writerows(rows)
 
 def getdueitems() -> list[list[str]]:
 	# get all items that are due for review
 	dueitems = []
-	with open("data"+os.path.sep+"memory.csv", "r") as f:
+	with open("data"+os.path.sep+"memory.csv", "r", newline='') as f:
 		file = csv.reader(f)
 		next(file)
 		for row in file:
