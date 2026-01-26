@@ -170,9 +170,11 @@ def mainloop():
 			print("Invalid choice, please try again.")
 			continue
 		if choice == "n":
+			scanfiles()
 			tickdown()
 			choice = "c"  # start a continue session after ticking down
 		if choice == "c":
+			scanfiles()
 			dueitems = getdueitems()
 			if not dueitems:
 				print("No items are due for review.")
